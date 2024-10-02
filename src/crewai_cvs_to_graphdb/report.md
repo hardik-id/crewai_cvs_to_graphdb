@@ -1,0 +1,1 @@
+Confirmation of successful execution of the Cypher query in the database.

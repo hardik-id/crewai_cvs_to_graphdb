@@ -1,0 +1,144 @@
+extract_info:
+  description: >
+    Extract information from the CV text and provide details such as Consultant Name, Skills, Clients, Projects, Certifications, Education, Training, and Locations.
+    Use this information to generate Cypher query with all the details nodes and relationships of the CV for Neo4j.
+    Cypher query should include all nodes and relationships based on the extracted information so that it can run in single execution.
+
+    Consultant: Name, contact information, CV file name.
+    Skills: List all skills mentioned, along with the number of years of experience for each skill if available.
+    Clients: Names of clients the consultant has worked with.
+    Projects: For each project, extract the name, description, duration, associated clients, and locations.
+    Certifications: Names and dates of certifications obtained.
+    Education: Degrees obtained, institutions attended, dates, and locations.
+    Training: Any training programs completed, including names and dates.
+    Locations: All locations associated with education, work experience, and projects.
+    Generate Neo4j Cypher query: Using the extracted information, create Cypher query to insert the data into a Neo4j database. Follow these guidelines:
+
+    Use MERGE Statements: To prevent duplication, use MERGE when creating nodes and relationships based on unique properties.
+
+    Labeling: Use the following labels for nodes:
+
+    Consultant
+    Skill
+    Client
+    Project
+    Certification
+    Education
+    Training
+    Location
+    Relationships: Establish appropriate relationships between nodes. Examples include:
+
+    ```
+    (Consultant)-[:HAS_SKILL {{years_of_experience: <Years>}}] -> (Skill)
+    (Consultant)-[:WORKED_ON]->(Project)
+    (Project)-[:FOR_CLIENT]->(Client)
+    (Consultant)-[:HAS_CERTIFICATION]->(Certification)
+    (Consultant)-[:ATTENDED]->(Education)
+    (Consultant)-[:COMPLETED_TRAINING]->(Training)
+    (Education)-[:LOCATED_IN]->(Location)
+    (Project)-[:LOCATED_IN]->(Location)
+    ```
+    Templates for Nodes and Relationships:
+
+    Consultant Node:
+    ```
+    MERGE (c:Consultant {{name: '<Consultant Name>', cv_file_name: '<CV File Name>', contact_info: '<Contact Information>'}})
+    ```
+    
+    Skill Node:
+    ```
+    MERGE (s:Skill {{name: '<Skill Name>'}})
+    HAS_SKILL Relationship with Years of Experience:
+    MERGE (c)-[r:HAS_SKILL]->(s)
+    SET r.years_of_experience = <Years of Experience>
+    ```
+    
+    Client Node:
+    ```
+    MERGE (cl:Client {{name: '<Client Name>'}})
+    ```
+    
+    Project Node and Relationships:
+    ```
+    MERGE (p:Project {{name: '<Project Name>', description: '<Project Description>', duration: '<Duration>'}})
+    MERGE (c)-[:WORKED_ON]->(p)
+    MERGE (p)-[:FOR_CLIENT]->(cl)
+    MERGE (p)-[:LOCATED_IN]->(l)
+    ```
+    
+    Certification Node and Relationship:
+    ```
+    MERGE (cert:Certification {{name: '<Certification Name>', date_obtained: '<Date Obtained>'}})
+    MERGE (c)-[:HAS_CERTIFICATION]->(cert)
+    ```
+    
+    Education Node and Relationships:
+    ```
+    MERGE (e:Education {{degree: '<Degree>', institution: '<Institution>', date_completed: '<Date Completed>'}})
+    MERGE (c)-[:ATTENDED]->(e)
+    MERGE (e)-[:LOCATED_IN]->(l)
+    ```
+    
+    Training Node and Relationship:
+    ```
+    MERGE (t:Training {{name: '<Training Name>', date_completed: '<Date Completed>'}})
+    MERGE (c)-[:COMPLETED_TRAINING]->(t)
+    ```
+    
+    Location Node:
+    ```
+    MERGE (l:Location {{name: '<Location Name>'}})
+    Unique Identification: Since IDs are not known beforehand, rely on unique properties to identify nodes:
+    ```
+    
+    For Consultant, use name and cv_file_name.
+    For Skill, Client, Certification, Training, and Location, use name.
+    For Education, use a combination of degree and institution.
+    For Project, use name and description.
+    Assume Cypher Knowledge: You are familiar with the Cypher query language and Neo4j database.
+
+    Syntax Accuracy: Ensure all queries are syntactically correct and executable in the Neo4j console.
+
+    Consistency: Use the provided templates to ensure consistency in creating nodes and relationships. Replace placeholders (e.g., <Consultant Name>) with the actual extracted information.
+
+    Output Format:
+    Only Output Cypher Queries: Do not include any explanatory text or additional information.
+
+    Example Cypher Queries:
+  
+    // Consultant Node
+    MERGE (c:Consultant {{name: 'Jane Smith', cv_file_name: 'janesmith_cv.txt', contact_info: 'jane.smith@example.com'}})
+
+    // Skill Node
+    MERGE (s:Skill {{name: 'Project Management'}})
+
+    // HAS_SKILL Relationship with Years of Experience
+    MERGE (c)-[r:HAS_SKILL]->(s)
+    SET r.years_of_experience = 8
+    Do Not Use Transactions or Wrap Multiple Queries Together: Each query should stand alone.
+    DO not make things up, if you don't find CV text below, say so.
+    
+    ===========================================
+    
+    CV TEXT:
+    {CV_TEXT}
+    
+
+  expected_output: >
+    A Single Cypher query with all nodes and relationships from CV Text for inserting data into a Neo4j database.
+  agent: cv_parser
+
+validate_cypher:
+  description: >
+    Validate the Cypher query generated from the CV parsing process to ensure correct syntax and structure.
+    If any issues are found, fix them so the query is ready for execution.
+  expected_output: >
+    A valid and syntactically correct Cypher query that can be safely executed in the Neo4j database.
+  agent: cypher_query_validator
+
+execute_cypher:
+  description: >
+    Execute a complete Cypher query with all nodes and relationships in the Neo4j database.
+  expected_output: >
+    Confirmation of successful execution of the Cypher query in the database.
+  agent: cypher_query_executor

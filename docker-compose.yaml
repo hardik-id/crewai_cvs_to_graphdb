@@ -1,0 +1,17 @@
+services:
+  neo4j:
+    image: neo4j:5.23
+    container_name: neo4j
+    ports:
+      - "7474:7474"  # Browser UI
+      - "7687:7687"  # Bolt protocol
+    volumes:
+      - ./neo4j/data:/data  # Persist data locally
+      - ./neo4j/logs:/logs  # Persist logs locally
+      - ./neo4j/plugins:/plugins  # Folder for plugins (including APOC)
+    environment:
+      - NEO4J_AUTH=neo4j/neo4j$123  # Set username and password
+      - NEO4JLABS_PLUGINS=["apoc"]  # Enable the APOC plugin
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*  # Allow APOC to run unrestricted procedures
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*  # Allowlisted APOC procedures
+    restart: unless-stopped
